@@ -10,7 +10,7 @@ const books: Book[] = [
   { price: 9, name: 'c', author: 'aqua' },
 ]
 
-import _, { filter, partial, sortBy } from 'lodash'
+import _, { filter, flow, partial, sortBy } from 'lodash'
 
 const booksByAqua = filter(books, ({ author }) => author === 'aqua')
 const booksSortByPrice = sortBy(booksByAqua, ({ price }) => price)
@@ -44,17 +44,56 @@ const plusOneAndSquare = compose<number>(plusOne, square)
 
 // ---
 
-const simpleCurry = () => {}
+const multiply = (x: number, y: number) => x * y
 
-const simplePartial = () => {}
+type FunctionWithTwoArgs<T> = (arg1: T, arg2: T) => T
 
-const filterBooksByAqua = partial<Book[], (_: Book) => boolean, Book[]>(
+const simpleCurry =
+  <T>(fn: FunctionWithTwoArgs<T>, arg1: T) =>
+  (arg2: T) =>
+    fn(arg1, arg2)
+
+const multiplyY = simpleCurry(multiply, 2)
+
+// console.log(multiplyY(3))
+
+const add = (x: number, y: number) => x + y
+
+const addY = simpleCurry(add, 3)
+
+const addAndMultiplyY = compose(addY, multiplyY)
+
+// console.log(addAndMultiplyY(1))
+
+const simplePartial = <T>(
+  fn: (...args: T[]) => T,
+  ...partialArgs: (T | undefined)[]
+) => {
+  const args = partialArgs
+  return (...restArgs: T[]) => {
+    let arg = 0
+    for (let index = 0; index < args.length; index++) {
+      const partialArg = args[index]
+      if (partialArg === undefined) args[index] = restArgs[arg++]
+    }
+    return fn(...(args as T[]))
+  }
+}
+
+const addX = simplePartial(add, undefined, 3)
+const multiplyX = simplePartial(multiply, undefined, 4)
+
+const addAndMultiplyX = compose(addX, multiplyX)
+
+// console.log(addAndMultiplyX(1))
+
+// ---
+
+const filterBooksByAlex = partial<Book[], (_: Book) => boolean, Book[]>(
   filter,
   _,
-  ({ author }) => author === 'aqua'
+  ({ author }) => author === 'Alex'
 )
-
-// filterBooksByAqua(books)
 
 const sortBooks = partial<Book[], (_: Book) => number, Book[]>(
   sortBy,
@@ -62,4 +101,43 @@ const sortBooks = partial<Book[], (_: Book) => number, Book[]>(
   ({ price }) => price
 )
 
-const flow = compose(filterBooksByAqua, sortBooks)
+const bookPipeline = flow(filterBooksByAlex, sortBooks)
+
+const booksA: Book[] = [
+  {
+    price: 13,
+    name: 'b',
+    author: 'Alex',
+  },
+  {
+    price: 20,
+    name: 'b',
+    author: 'Steve',
+  },
+  {
+    price: 17,
+    name: 'c',
+    author: 'Alex',
+  },
+]
+
+const booksB: Book[] = [
+  {
+    price: 33,
+    name: 'd',
+    author: 'Alex',
+  },
+  {
+    price: 30,
+    name: 'e',
+    author: 'Steve',
+  },
+  {
+    price: 7,
+    name: 'f',
+    author: 'Alex',
+  },
+]
+
+console.log(bookPipeline(booksA))
+console.log(bookPipeline(booksB))
