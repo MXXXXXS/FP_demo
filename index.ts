@@ -1,3 +1,12 @@
+const arrayOfWords = ['a', 'b', 'c', 'd']
+
+for (let index = 0; index < arrayOfWords.length; index++) {
+  const word = arrayOfWords[index]
+  console.log(word)
+}
+
+arrayOfWords.forEach((word) => console.log(word))
+
 interface Book {
   price: number
   name: string
@@ -139,5 +148,5 @@ const booksB: Book[] = [
   },
 ]
 
-console.log(bookPipeline(booksA))
-console.log(bookPipeline(booksB))
+// console.log(bookPipeline(booksA))
+// console.log(bookPipeline(booksB))
